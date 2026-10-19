@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v2.1.7 (2026-10-19)
+
+### Bug Fixes
+
+- Bump ruff from 0.16.10 to 0.17.1 ([#171](https://github.com/TETRA-2023/pytaiga-mcp/pull/171),
+  [`a479f88`](https://github.com/TETRA-2023/pytaiga-mcp/commit/a479f88f7eb251cb270f96bb0e54bf03c8689b0c))
+
+
 ## v2.1.6 (2026-10-12)
 
 ### Bug Fixes
