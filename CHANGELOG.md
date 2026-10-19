@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v2.1.10 (2026-10-19)
+
+### Bug Fixes
+
+- Bump pre-commit from 4.6.2 to 4.7.0 ([#172](https://github.com/TETRA-2023/pytaiga-mcp/pull/172),
+  [`419e58d`](https://github.com/TETRA-2023/pytaiga-mcp/commit/419e58d3d94005ba06e11b581d0847914a66f0a7))
+
+
 ## v2.1.9 (2026-10-19)
 
 ### Bug Fixes
