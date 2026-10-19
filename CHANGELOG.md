@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v2.1.8 (2026-10-19)
+
+### Bug Fixes
+
+- Bump pydantic from 2.14.0 to 2.14.1 ([#170](https://github.com/TETRA-2023/pytaiga-mcp/pull/170),
+  [`07bf3e0`](https://github.com/TETRA-2023/pytaiga-mcp/commit/07bf3e07dbda4bd9b254e6a628255fa8f6eb8e5f))
+
+
 ## v2.1.7 (2026-10-19)
 
 ### Bug Fixes
