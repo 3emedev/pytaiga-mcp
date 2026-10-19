@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v2.1.11 (2026-10-19)
+
+### Bug Fixes
+
+- Bump mcp from 1.28.1 to 1.30.0 ([#174](https://github.com/TETRA-2023/pytaiga-mcp/pull/174),
+  [`de16998`](https://github.com/TETRA-2023/pytaiga-mcp/commit/de169982dbb5490ca7965a0739bd7e70d4016b1f))
+
+
 ## v2.1.10 (2026-10-19)
 
 ### Bug Fixes
