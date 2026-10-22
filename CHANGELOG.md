@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v3.0.0 (2026-10-22)
+
+### Continuous Integration
+
+- Ask Dependabot to rebase auto-merge PRs stranded behind main
+  ([#180](https://github.com/TETRA-2023/pytaiga-mcp/pull/180),
+  [`ad0a39b`](https://github.com/TETRA-2023/pytaiga-mcp/commit/ad0a39bfbd907cfbe4d8aa9b6f1a41b2bf69189d))
+
+
 ## v2.1.14 (2026-10-22)
 
 ### Bug Fixes
