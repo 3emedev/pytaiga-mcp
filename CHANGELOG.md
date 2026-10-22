@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v2.1.12 (2026-10-22)
+
+### Bug Fixes
+
+- Link epic stories one by one instead of creating a junk story (#143)
+  ([#176](https://github.com/TETRA-2023/pytaiga-mcp/pull/176),
+  [`2c1d8ae`](https://github.com/TETRA-2023/pytaiga-mcp/commit/2c1d8ae97548a924f75b363426a823db6f94aa6b))
+
+
 ## v2.1.11 (2026-10-19)
 
 ### Bug Fixes
