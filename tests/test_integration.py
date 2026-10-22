@@ -15,6 +15,7 @@ import uuid
 import pytest
 
 import src.server_workflow as wf
+from src.taiga_client import TaigaBadRequestError
 
 TEST_HOST = os.environ.get(
     "TAIGA_TEST_HOST", os.environ.get("TAIGA_API_URL", "http://localhost:9000")
@@ -58,6 +59,20 @@ class TestReadOnly:
         status = wf.session_status(session_id=session_id)
         assert status["status"] == "active"
 
+    def test_expired_access_token_is_refreshed(self, session_id):
+        """A rejected access token triggers one real POST /auth/refresh, then a retry.
+
+        Simulates the 24 h access-token expiry by corrupting the token in place.
+        The refresh token must also rotate: Taiga rejects a spent one.
+        """
+        api = wf.active_sessions[session_id].api
+        old_refresh = api._refresh_token
+        api.auth_token = "expired-or-garbage"
+        me = api.get("/users/me")
+        assert me["username"]
+        assert api.auth_token != "expired-or-garbage"
+        assert api._refresh_token and api._refresh_token != old_refresh
+
 
 @pytest.mark.integration
 @needs_sandbox
@@ -95,3 +110,90 @@ class TestSandboxWrites:
             if task_id is not None:
                 _delete(session_id, "tasks", task_id)
             _delete(session_id, "userstories", story["id"])
+
+    def test_validation_error_keeps_drf_body(self, session_id):
+        """A real 400 surfaces Taiga's field errors (pre-v3: "No error message")."""
+        project_id = wf.get_project_overview(TEST_PROJECT, session_id=session_id)["project"]["id"]
+        with pytest.raises(TaigaBadRequestError) as ei:
+            # No subject: rejected by validation, nothing is created.
+            wf.active_sessions[session_id].api.post("/userstories", json={"project": project_id})
+        assert "subject" in ei.value.error_detail
+        assert "No error message provided" not in str(ei.value)
+
+    def test_issue_sprint_epic_assign_wiki_round_trip(self, session_id):
+        """The rest of the v3 B2 rewrite on real endpoints: issues, sprints,
+        epics (incl. the #143 per-story link), assignment and the wiki.
+
+        Everything created here is deleted in `finally`, and the project's
+        story count is checked unchanged — #143 used to inject a junk story.
+        """
+        project_id = wf.get_project_overview(TEST_PROJECT, session_id=session_id)["project"]["id"]
+        api = wf.active_sessions[session_id].api
+        tag = uuid.uuid4().hex[:8]
+        stories_before = len(
+            wf.active_sessions[session_id].list_resources("user_stories", project_id=project_id)
+        )
+        made = {"userstories": [], "issues": [], "epics": [], "milestones": [], "wiki": []}
+        try:
+            a = wf.create_story(TEST_PROJECT, f"[TEST - CAN DELETE] a {tag}", session_id=session_id)
+            b = wf.create_story(TEST_PROJECT, f"[TEST - CAN DELETE] b {tag}", session_id=session_id)
+            made["userstories"] += [a["id"], b["id"]]
+
+            # Issue: create -> update -> get by ref.
+            issue = wf.create_issue(
+                TEST_PROJECT, f"[TEST - CAN DELETE] issue {tag}", session_id=session_id
+            )
+            made["issues"].append(issue["id"])
+            wf.update_issue(TEST_PROJECT, issue["ref"], description="edited", session_id=session_id)
+            got = wf.get_issue(TEST_PROJECT, issue["ref"], session_id=session_id)
+            assert got["description"] == "edited"
+
+            # Sprint: plan with story a, then close it by name.
+            name = f"[TEST] sprint {tag}"
+            planned = wf.plan_sprint(
+                TEST_PROJECT,
+                name,
+                "2026-01-01",
+                "2026-01-14",
+                story_refs=[a["ref"]],
+                session_id=session_id,
+            )
+            made["milestones"].append(planned["sprint"]["id"])
+            assert planned["stories_assigned"] == 1
+            closed = wf.close_sprint(TEST_PROJECT, name, session_id=session_id)
+            assert closed["status"] == "closed"
+
+            # Epic linking both stories: the live check for #143.
+            epic = wf.create_epic(
+                TEST_PROJECT,
+                f"[TEST - CAN DELETE] epic {tag}",
+                story_refs=[a["ref"], b["ref"]],
+                session_id=session_id,
+            )
+            made["epics"].append(epic["id"])
+            assert epic["stories_linked"] == 2
+            overview = wf.get_epic_overview(TEST_PROJECT, epic["ref"], session_id=session_id)
+            assert sorted(s["ref"] for s in overview["stories"]) == sorted([a["ref"], b["ref"]])
+
+            # Assignment through the uniform PATCH, to the logged-in user.
+            me = wf.get_current_user(session_id=session_id)
+            assigned = wf.assign_item(TEST_PROJECT, b["ref"], me["email"], session_id=session_id)
+            assert assigned["assigned_to"]
+
+            # Wiki: create, then upsert again to take the update path.
+            slug = f"test-can-delete-{tag}"
+            first = wf.upsert_wiki(TEST_PROJECT, slug, "v1", session_id=session_id)
+            made["wiki"].append(first["id"])
+            assert first["status"] == "created"
+            second = wf.upsert_wiki(TEST_PROJECT, slug, "v2", session_id=session_id)
+            assert second["status"] == "updated"
+            assert wf.get_wiki(TEST_PROJECT, slug, session_id=session_id)["content"] == "v2"
+        finally:
+            for resource in ("epics", "issues", "wiki", "userstories", "milestones"):
+                for item_id in made[resource]:
+                    _delete(session_id, resource, item_id)
+        stories_after = len(
+            wf.active_sessions[session_id].list_resources("user_stories", project_id=project_id)
+        )
+        assert stories_after == stories_before, "a story was left behind (cf. #143 junk story)"
+        assert api.auth_token
