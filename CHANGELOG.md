@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v2.1.14 (2026-10-22)
+
+### Bug Fixes
+
+- Bump virtualenv from 21.7.13 to 21.14.9
+  ([#177](https://github.com/TETRA-2023/pytaiga-mcp/pull/177),
+  [`ea4ac3e`](https://github.com/TETRA-2023/pytaiga-mcp/commit/ea4ac3e238a741211dd7f5669f52820f7632f36e))
+
+
 ## v2.1.13 (2026-10-22)
 
 ### Bug Fixes
