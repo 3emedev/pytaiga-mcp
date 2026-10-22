@@ -2,6 +2,38 @@
 
 <!-- version list -->
 
+## v2.1.14 (2026-10-22)
+
+### Bug Fixes
+
+- Bump virtualenv from 21.7.13 to 21.14.9
+  ([#177](https://github.com/TETRA-2023/pytaiga-mcp/pull/177),
+  [`ea4ac3e`](https://github.com/TETRA-2023/pytaiga-mcp/commit/ea4ac3e238a741211dd7f5669f52820f7632f36e))
+
+
+## v2.1.13 (2026-10-22)
+
+### Bug Fixes
+
+- Bump certifi from 2026.2.25 to 2026.10.19
+  ([#178](https://github.com/TETRA-2023/pytaiga-mcp/pull/178),
+  [`61157b3`](https://github.com/TETRA-2023/pytaiga-mcp/commit/61157b3a99b7cf4252305b8a3b178eda7d1e44ad))
+
+### Continuous Integration
+
+- Gate merges and :stable on a container smoke test (initialize + tools/list)
+  ([#175](https://github.com/TETRA-2023/pytaiga-mcp/pull/175),
+  [`37f526e`](https://github.com/TETRA-2023/pytaiga-mcp/commit/37f526e2b8b12316d63938df91a9e6ecfe117522))
+
+- **smoke**: Pipe the script on stdin instead of bind-mounting it
+  ([#175](https://github.com/TETRA-2023/pytaiga-mcp/pull/175),
+  [`37f526e`](https://github.com/TETRA-2023/pytaiga-mcp/commit/37f526e2b8b12316d63938df91a9e6ecfe117522))
+
+- **smoke**: Run the server under test with --network none
+  ([#175](https://github.com/TETRA-2023/pytaiga-mcp/pull/175),
+  [`37f526e`](https://github.com/TETRA-2023/pytaiga-mcp/commit/37f526e2b8b12316d63938df91a9e6ecfe117522))
+
+
 ## v2.1.12 (2026-10-22)
 
 ### Bug Fixes
