@@ -14,7 +14,11 @@ dependencies = [
     "python-dotenv>=0.15.0",
     "pydantic>=2.13.4",
     "pydantic-settings>=2.15.0",
-    "pytaigaclient",
+    # Taiga HTTP client (src/taiga_client.py). Already pulled in by mcp; declared
+    # because we import it directly.
+    "httpx>=0.28.1",
+    # Runs sync tools in worker threads (src/server/app.py:tool). Also pulled in by mcp.
+    "anyio>=4.14.2",
 ]
 
 [project.optional-dependencies]
@@ -28,15 +32,19 @@ dev = [
 ]
 
 [project.scripts]
-mcp-taiga-workflow = "src.server_workflow:main"
-mcp-taiga-full = "src.server_full:main"
+mcp-taiga = "src.server.app:main"
+# Pre-v3 name, kept for the v3.x line so existing launch configs keep working.
+mcp-taiga-workflow = "src.server.app:main"
 
 [project.readme]
 file = "README.md"
 content-type = "text/markdown"
 
-[tool.setuptools]
-packages = ["src"]
+[tool.setuptools.packages.find]
+# Discover src and its subpackages (src.server, src.server.tools). The old
+# `packages = ["src"]` shipped only top-level modules: a non-editable install
+# (the Docker image) then lacked src.server and the entry point crashed at import.
+include = ["src*"]
 
 [tool.ruff]
 line-length = 100
@@ -83,9 +91,6 @@ token = { env = "GH_TOKEN" }
 
 [tool.semantic_release.changelog.default_templates]
 changelog_file = "CHANGELOG.md"
-
-[tool.uv.sources]
-pytaigaclient = { git = "https://github.com/talhaorak/pyTaigaClient.git" }
 
 [dependency-groups]
 dev = [

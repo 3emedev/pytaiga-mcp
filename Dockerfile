@@ -1,9 +1,5 @@
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
-# git is required for pytaigaclient (git source dependency)
-RUN apt-get update && apt-get install -y --no-install-recommends git \
-    && rm -rf /var/lib/apt/lists/*
-
 # Create non-root user
 RUN groupadd --system appgroup && useradd --system --gid appgroup appuser
 
@@ -27,8 +23,7 @@ ENV UV_CACHE_DIR=/tmp/uv-cache
 # Run as non-root
 USER appuser
 
-# TAIGA_SERVER_MODE selects which server to run: workflow (default) or full.
-# ENTRYPOINT uses sh -c "... $@" with "--" so additional `docker run image <args>`
-# (e.g. --sse, --streamable-http) are forwarded to the chosen binary.
-ENV TAIGA_SERVER_MODE=workflow
-ENTRYPOINT ["/bin/sh", "-c", "exec /app/.venv/bin/mcp-taiga-${TAIGA_SERVER_MODE} \"$@\"", "--"]
+# Single server since v3. Extra `docker run image <args>` (e.g. --sse,
+# --streamable-http) are appended to the exec-form ENTRYPOINT. TAIGA_SERVER_MODE
+# is no longer read for dispatch; the server warns if a deployment still sets it.
+ENTRYPOINT ["/app/.venv/bin/mcp-taiga"]
