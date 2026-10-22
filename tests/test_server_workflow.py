@@ -7,6 +7,7 @@ from unittest.mock import DEFAULT, MagicMock, call
 import pytest
 
 import src.server_workflow as wf
+from src import taiga_client
 from src.taiga_client import (
     TaigaAPIError,
     TaigaAuthenticationError,
@@ -708,6 +709,17 @@ class TestSessionStatusParity:
         assert result["reason"] == "token_invalid"
         assert result["session_id"] == session
         assert session not in wf.active_sessions
+
+    def test_token_invalid_clears_session_cache(self, session, mock_client):
+        # Like logout(): a dropped session must not leave its lookup cache behind
+        # for the next login() that reuses the same id (e.g. "default").
+        wf._session_cache_for(session)["members_1"] = ["stale"]
+        route(
+            mock_client,
+            get={"/users/me": TaigaAuthenticationError(401, "Token is invalid")},
+        )
+        wf.session_status(session_id=session)
+        assert session not in wf._session_cache
 
     def test_transient_error_keeps_session(self, session, mock_client):
         # A timeout or 5xx says nothing about the token: keep the session.
@@ -1474,7 +1486,7 @@ class TestBreakDownStoryBulkShapeWarn:
         # Simulate an unexpected response shape from /tasks/bulk_create.
         mock_client.api.post.return_value = {"unexpected": "shape"}
 
-        with caplog.at_level("WARNING", logger="src.server_workflow"):
+        with caplog.at_level("WARNING", logger="src.server.tools.tasks"):
             result = wf.break_down_story("p", 42, ["X", "Y"], session_id=session)
 
         assert result["tasks_created"] == 0
@@ -2508,7 +2520,8 @@ class TestLogin:
     def test_login_success_creates_session(self, monkeypatch):
         wrapper = MagicMock()
         wrapper.login.return_value = True
-        monkeypatch.setattr(wf, "TaigaClientWrapper", lambda host: wrapper)
+        # login() and the lifespan look TaigaClientWrapper up via src.taiga_client.
+        monkeypatch.setattr(taiga_client, "TaigaClientWrapper", lambda host: wrapper)
         result = wf.login(host="https://taiga.example", username="u", password="p")
         assert "session_id" in result
         assert wf.active_sessions[result["session_id"]] is wrapper
@@ -2517,7 +2530,8 @@ class TestLogin:
     def test_login_failure_raises(self, monkeypatch):
         wrapper = MagicMock()
         wrapper.login.return_value = False
-        monkeypatch.setattr(wf, "TaigaClientWrapper", lambda host: wrapper)
+        # login() and the lifespan look TaigaClientWrapper up via src.taiga_client.
+        monkeypatch.setattr(taiga_client, "TaigaClientWrapper", lambda host: wrapper)
         # The bare RuntimeError("Login failed.") is re-wrapped by the generic
         # handler into the "unexpected server error" message.
         with pytest.raises(RuntimeError, match="unexpected server error"):
@@ -3022,7 +3036,7 @@ class TestLegacyServerMode:
     """v3 dropped the full server: TAIGA_SERVER_MODE no longer dispatches anything."""
 
     def test_full_mode_warns_and_does_not_raise(self, caplog):
-        with caplog.at_level("WARNING", logger="src.server_workflow"):
+        with caplog.at_level("WARNING", logger="src.server.app"):
             wf._warn_legacy_server_mode({"TAIGA_SERVER_MODE": "full"})
         assert "TAIGA_SERVER_MODE='full' is ignored" in caplog.text
 
@@ -3030,6 +3044,6 @@ class TestLegacyServerMode:
         "env", [{}, {"TAIGA_SERVER_MODE": "workflow"}, {"TAIGA_SERVER_MODE": ""}]
     )
     def test_unset_or_workflow_is_silent(self, caplog, env):
-        with caplog.at_level("WARNING", logger="src.server_workflow"):
+        with caplog.at_level("WARNING", logger="src.server.app"):
             wf._warn_legacy_server_mode(env)
         assert "TAIGA_SERVER_MODE" not in caplog.text
