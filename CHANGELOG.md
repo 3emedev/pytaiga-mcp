@@ -2,6 +2,20 @@
 
 <!-- version list -->
 
+## v3.1.1 (2026-10-23)
+
+### Bug Fixes
+
+- Bump gitpython from 3.1.62 to 3.2.1 ([#198](https://github.com/TETRA-2023/pytaiga-mcp/pull/198),
+  [`6a3c327`](https://github.com/TETRA-2023/pytaiga-mcp/commit/6a3c3275b7404b6b59be2ef520a221ceae6013c6))
+
+### Refactoring
+
+- Remove dead code (get_resource, mask_credential, comment path alias)
+  ([#196](https://github.com/TETRA-2023/pytaiga-mcp/pull/196),
+  [`56d1aa8`](https://github.com/TETRA-2023/pytaiga-mcp/commit/56d1aa8585f021b8a98a61db239edc956e038832))
+
+
 ## v3.1.0 (2026-10-23)
 
 ### Bug Fixes
