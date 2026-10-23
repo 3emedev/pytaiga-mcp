@@ -2,6 +2,30 @@
 
 <!-- version list -->
 
+## v3.1.0 (2026-10-23)
+
+### Bug Fixes
+
+- Address review of #195 (version check, conflicts, relink, help text)
+  ([#195](https://github.com/TETRA-2023/pytaiga-mcp/pull/195),
+  [`16adc9b`](https://github.com/TETRA-2023/pytaiga-mcp/commit/16adc9b40054156592fc5fff3536a5b9511ddc53))
+
+### Chores
+
+- Ignore graphify-out/ ([#193](https://github.com/TETRA-2023/pytaiga-mcp/pull/193),
+  [`7a20ec0`](https://github.com/TETRA-2023/pytaiga-mcp/commit/7a20ec0c9ad3b5b618ec8c6a29999276f2721db4))
+
+- Remove internal references from the public repo
+  ([#193](https://github.com/TETRA-2023/pytaiga-mcp/pull/193),
+  [`7a20ec0`](https://github.com/TETRA-2023/pytaiga-mcp/commit/7a20ec0c9ad3b5b618ec8c6a29999276f2721db4))
+
+### Features
+
+- Partial, checked description edits on update_epic/story/issue/task
+  ([#195](https://github.com/TETRA-2023/pytaiga-mcp/pull/195),
+  [`16adc9b`](https://github.com/TETRA-2023/pytaiga-mcp/commit/16adc9b40054156592fc5fff3536a5b9511ddc53))
+
+
 ## v3.0.0 (2026-10-22)
 
 ### Continuous Integration
