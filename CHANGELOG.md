@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v3.2.1 (2026-10-26)
+
+### Bug Fixes
+
+- Accept TAIGA_API_URL ending in /api/v1; report a failed auto-login
+  ([#197](https://github.com/TETRA-2023/pytaiga-mcp/pull/197),
+  [`4077eae`](https://github.com/TETRA-2023/pytaiga-mcp/commit/4077eae5589e10a1bd6d03e0cd834bc4d413073f))
+
+
 ## v3.2.0 (2026-10-26)
 
 ### Features
