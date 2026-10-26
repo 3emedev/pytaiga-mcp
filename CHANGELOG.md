@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v3.1.2 (2026-10-26)
+
+### Bug Fixes
+
+- Bump anyio from 4.14.2 to 4.15.1 ([#199](https://github.com/TETRA-2023/pytaiga-mcp/pull/199),
+  [`6459f10`](https://github.com/TETRA-2023/pytaiga-mcp/commit/6459f109f74682e55e0b0d7fef93b5ba99566e0a))
+
+
 ## v3.1.1 (2026-10-23)
 
 ### Bug Fixes
