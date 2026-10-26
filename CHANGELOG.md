@@ -2,6 +2,32 @@
 
 <!-- version list -->
 
+## v3.2.1 (2026-10-26)
+
+### Bug Fixes
+
+- Accept TAIGA_API_URL ending in /api/v1; report a failed auto-login
+  ([#197](https://github.com/TETRA-2023/pytaiga-mcp/pull/197),
+  [`4077eae`](https://github.com/TETRA-2023/pytaiga-mcp/commit/4077eae5589e10a1bd6d03e0cd834bc4d413073f))
+
+
+## v3.2.0 (2026-10-26)
+
+### Features
+
+- Show story epics and task parent; say update_story(epic=) replaces links
+  ([#204](https://github.com/TETRA-2023/pytaiga-mcp/pull/204),
+  [`842c158`](https://github.com/TETRA-2023/pytaiga-mcp/commit/842c158c596511f2b7d88ea9151b5dc82afcce53))
+
+
+## v3.1.6 (2026-10-26)
+
+### Bug Fixes
+
+- Bump filelock from 3.25.2 to 4.2.1 ([#202](https://github.com/TETRA-2023/pytaiga-mcp/pull/202),
+  [`d5566da`](https://github.com/TETRA-2023/pytaiga-mcp/commit/d5566da8b4e8e72ad2c16d5b611bd5d4d4f969b8))
+
+
 ## v3.1.5 (2026-10-26)
 
 ### Bug Fixes
