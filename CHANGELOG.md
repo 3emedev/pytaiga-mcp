@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v3.1.4 (2026-10-26)
+
+### Bug Fixes
+
+- Bump pydantic-settings from 2.16.0 to 2.16.1
+  ([#201](https://github.com/TETRA-2023/pytaiga-mcp/pull/201),
+  [`ca6f764`](https://github.com/TETRA-2023/pytaiga-mcp/commit/ca6f764a1ba16f6c9846294064b79c9d65583ea1))
+
+
 ## v3.1.3 (2026-10-26)
 
 ### Bug Fixes
