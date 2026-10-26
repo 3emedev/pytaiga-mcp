@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v3.1.6 (2026-10-26)
+
+### Bug Fixes
+
+- Bump filelock from 3.25.2 to 4.2.1 ([#202](https://github.com/TETRA-2023/pytaiga-mcp/pull/202),
+  [`d5566da`](https://github.com/TETRA-2023/pytaiga-mcp/commit/d5566da8b4e8e72ad2c16d5b611bd5d4d4f969b8))
+
+
 ## v3.1.5 (2026-10-26)
 
 ### Bug Fixes
