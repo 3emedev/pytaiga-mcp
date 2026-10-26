@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v3.2.0 (2026-10-26)
+
+### Features
+
+- Show story epics and task parent; say update_story(epic=) replaces links
+  ([#204](https://github.com/TETRA-2023/pytaiga-mcp/pull/204),
+  [`842c158`](https://github.com/TETRA-2023/pytaiga-mcp/commit/842c158c596511f2b7d88ea9151b5dc82afcce53))
+
+
 ## v3.1.6 (2026-10-26)
 
 ### Bug Fixes
