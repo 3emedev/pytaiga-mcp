@@ -351,6 +351,14 @@ def _summarize_timeline_event(event: Dict[str, Any], full_comments: bool = False
         "action": action,
         "object_id": event.get("object_id"),
     }
+    # Taiga puts the PROJECT id in the top-level object_id; the story identity
+    # lives in data.userstory — surface it so events name what actually changed.
+    story_info = data.get("userstory")
+    if isinstance(story_info, dict):
+        if story_info.get("ref") is not None:
+            summary["story_ref"] = story_info["ref"]
+        if story_info.get("subject"):
+            summary["story_subject"] = story_info["subject"]
     if changed_fields:
         summary["changed_fields"] = changed_fields
     if comment:

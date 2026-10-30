@@ -1793,6 +1793,29 @@ class TestGetProjectActivity:
         assert result["events"][0]["when"] == "2026-06-05T10:00:00Z"
         assert result["events"][0]["object_id"] == 42
 
+    def test_story_attribution_when_userstory_present(self, session, mock_client):
+        """The summary must name the STORY, not the project-level object_id."""
+        event = self._event(fields=["status"])
+        event["data"]["userstory"] = {
+            "id": 282,
+            "ref": 37,
+            "subject": "Packaged render runtime",
+        }
+        self._setup(mock_client, [event])
+        result = wf.get_project_activity("p", session_id=session)
+        summary = result["events"][0]
+        assert summary["story_ref"] == 37
+        assert summary["story_subject"] == "Packaged render runtime"
+        # Top-level object_id is the project id by Taiga design — kept untouched.
+        assert summary["object_id"] == 42
+
+    def test_no_story_keys_when_userstory_absent(self, session, mock_client):
+        events = [self._event()]
+        self._setup(mock_client, events)
+        result = wf.get_project_activity("p", session_id=session)
+        assert "story_ref" not in result["events"][0]
+        assert "story_subject" not in result["events"][0]
+
     def test_empty_event_type_yields_unknown_entity(self, session, mock_client):
         event = self._event(event_type="")
         self._setup(mock_client, [event])
@@ -4005,6 +4028,18 @@ class TestActivityComments:
     def test_short_comment_untouched(self):
         s = wf._summarize_timeline_event(self._event("short"))
         assert s["comment"] == "short" and "comment_truncated" not in s
+
+    def test_story_attribution_from_userstory_data(self):
+        event = self._event("hi")
+        event["data"]["userstory"] = {"id": 282, "ref": 37, "subject": "Packaged render runtime"}
+        s = wf._summarize_timeline_event(event)
+        assert s["story_ref"] == 37
+        assert s["story_subject"] == "Packaged render runtime"
+
+    def test_no_story_keys_when_userstory_absent(self):
+        s = wf._summarize_timeline_event(self._event("hi"))
+        assert "story_ref" not in s
+        assert "story_subject" not in s
 
 
 # ---------------------------------------------------------------------------
