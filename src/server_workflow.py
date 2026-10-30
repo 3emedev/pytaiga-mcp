@@ -2335,7 +2335,7 @@ def _summarize_timeline_event(event: Dict[str, Any]) -> Dict[str, Any]:
     if changed_fields:
         summary["changed_fields"] = changed_fields
     if comment:
-        summary["comment"] = comment[:200]  # truncate long comments
+        summary["comment"] = comment
     return summary
 
 

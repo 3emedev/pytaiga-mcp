@@ -1515,12 +1515,12 @@ class TestGetProjectActivity:
         result = wf.get_project_activity("p", session_id=session)
         assert result["events"][0]["comment"] == "Great progress!"
 
-    def test_comment_truncated_at_200(self, session, mock_client):
+    def test_comment_returned_in_full(self, session, mock_client):
         long_comment = "x" * 300
         events = [self._event(comment=long_comment)]
         self._setup(mock_client, events)
         result = wf.get_project_activity("p", session_id=session)
-        assert len(result["events"][0]["comment"]) == 200
+        assert result["events"][0]["comment"] == long_comment
 
     def test_no_changed_fields_key_when_empty(self, session, mock_client):
         events = [self._event()]
