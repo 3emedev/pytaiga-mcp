@@ -1528,6 +1528,29 @@ class TestGetProjectActivity:
         result = wf.get_project_activity("p", session_id=session)
         assert "changed_fields" not in result["events"][0]
 
+    def test_story_attribution_when_userstory_present(self, session, mock_client):
+        """The summary must name the STORY, not the project-level object_id."""
+        event = self._event(fields=["status"])
+        event["data"]["userstory"] = {
+            "id": 282,
+            "ref": 37,
+            "subject": "Packaged render runtime",
+        }
+        self._setup(mock_client, [event])
+        result = wf.get_project_activity("p", session_id=session)
+        summary = result["events"][0]
+        assert summary["story_ref"] == 37
+        assert summary["story_subject"] == "Packaged render runtime"
+        # Top-level object_id is the project id by Taiga design — kept untouched.
+        assert summary["object_id"] == 42
+
+    def test_no_story_keys_when_userstory_absent(self, session, mock_client):
+        events = [self._event()]
+        self._setup(mock_client, events)
+        result = wf.get_project_activity("p", session_id=session)
+        assert "story_ref" not in result["events"][0]
+        assert "story_subject" not in result["events"][0]
+
     def test_entity_map_task(self, session, mock_client):
         events = [self._event(event_type="tasks.task.create")]
         self._setup(mock_client, events)
