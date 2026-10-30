@@ -1082,6 +1082,96 @@ class TestAddComment:
             wf.add_comment("p", 7, "   ", entity_type="task", session_id=session)
 
 
+class TestListStoryComments:
+    """list_story_comments must resolve ref→ID via /userstories/by_ref with
+    `params=` (issue #87 — see TestAddComment), read /history/userstory/<id>,
+    and return full-text comments oldest→newest."""
+
+    def _project(self):
+        return {"id": 1, "slug": "p", "name": "P"}
+
+    def _history_entry(self, when, comment, author="M4K3R", username="m4k3r"):
+        return {
+            "created_at": when,
+            "comment": comment,
+            "user": {"pk": 6, "username": username, "name": author},
+            "is_hidden": False,
+        }
+
+    def _setup(self, mock_client, history):
+        def api_get(path, params=None):
+            if "/userstories/by_ref" in str(path):
+                return {"id": 50, "ref": 12, "subject": "Ship it"}
+            if "/history/userstory/" in str(path):
+                return history
+            return self._project()
+
+        mock_client.api.get.side_effect = api_get
+
+    def test_resolves_ref_via_by_ref_endpoint_not_helper(self, session, mock_client):
+        self._setup(mock_client, [])
+        result = wf.list_story_comments("p", 12, session_id=session)
+        assert result["story"] == {"id": 50, "ref": 12, "subject": "Ship it"}
+        mock_client.api.get.assert_any_call("/userstories/by_ref", params={"ref": 12, "project": 1})
+        mock_client.api.user_stories.get_by_ref.assert_not_called()
+
+    def test_returns_full_text_oldest_to_newest(self, session, mock_client):
+        # The history endpoint returns newest-first; the verb must flip the order
+        # and keep long comment text whole.
+        long_text = "y" * 300
+        history = [
+            self._history_entry("2026-10-30T02:00:00Z", "newest"),
+            self._history_entry("2026-10-28T23:28:26Z", long_text),
+            self._history_entry("2026-10-28T10:00:00Z", "oldest"),
+        ]
+        self._setup(mock_client, history)
+        result = wf.list_story_comments("p", 12, session_id=session)
+        assert result["count"] == 3
+        assert [c["text"] for c in result["comments"]] == ["oldest", long_text, "newest"]
+        assert len(result["comments"][1]["text"]) == 300
+
+    def test_author_and_timestamp_carried(self, session, mock_client):
+        self._setup(mock_client, [self._history_entry("2026-10-28T10:00:00Z", "hello")])
+        result = wf.list_story_comments("p", 12, session_id=session)
+        assert result["comments"][0] == {
+            "author": "M4K3R",
+            "timestamp": "2026-10-28T10:00:00Z",
+            "text": "hello",
+        }
+
+    def test_author_falls_back_to_username(self, session, mock_client):
+        entry = self._history_entry("2026-10-28T10:00:00Z", "hi", author="", username="bob")
+        self._setup(mock_client, [entry])
+        result = wf.list_story_comments("p", 12, session_id=session)
+        assert result["comments"][0]["author"] == "bob"
+
+    def test_change_entries_without_comment_skipped(self, session, mock_client):
+        history = [
+            self._history_entry("2026-10-29T10:00:00Z", ""),
+            self._history_entry("2026-10-28T10:00:00Z", "only real comment"),
+        ]
+        self._setup(mock_client, history)
+        result = wf.list_story_comments("p", 12, session_id=session)
+        assert result["count"] == 1
+        assert result["comments"][0]["text"] == "only real comment"
+
+    def test_non_list_history_coerced_to_empty(self, session, mock_client):
+        self._setup(mock_client, {"unexpected": "dict"})
+        result = wf.list_story_comments("p", 12, session_id=session)
+        assert result["comments"] == []
+        assert result["count"] == 0
+
+    def test_raises_when_story_not_found(self, session, mock_client):
+        def api_get(path, params=None):
+            if "/userstories/by_ref" in str(path):
+                return None
+            return self._project()
+
+        mock_client.api.get.side_effect = api_get
+        with pytest.raises(ValueError, match="Story #12 not found"):
+            wf.list_story_comments("p", 12, session_id=session)
+
+
 class TestBreakDownStory:
     def _project(self):
         return {"id": 1, "slug": "p", "name": "P"}

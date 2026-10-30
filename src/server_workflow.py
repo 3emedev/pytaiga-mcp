@@ -2437,6 +2437,75 @@ def add_comment(
 
 
 # ---------------------------------------------------------------------------
+# Story comments tool
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool(
+    "list_story_comments",
+    description=(
+        "Return the comments on a user story identified by ref number, oldest first, "
+        "each with full text, author, and timestamp. "
+        "project accepts a slug (e.g. 'my-project') or numeric ID."
+    ),
+)
+def list_story_comments(
+    project: Union[str, int],
+    ref: int,
+    session_id: Optional[str] = None,
+) -> Dict[str, Any]:
+    actual_session_id = _get_session_id(session_id)
+    client = _get_authenticated_client(actual_session_id)
+
+    def do_comments():
+        proj = _resolve_project(client, project)
+        project_id = proj["id"]
+
+        # Resolve ref → ID via the by_ref endpoint directly, bypassing the
+        # pytaigaclient helpers (issue #87 — see add_comment).
+        story = client.api.get("/userstories/by_ref", params={"ref": ref, "project": project_id})
+        if not story:
+            raise ValueError(f"Story #{ref} not found in '{proj['slug']}'.")
+
+        raw = client.api.get(f"/history/userstory/{story['id']}")
+        entries = raw if isinstance(raw, list) else []
+
+        def _author(entry: Dict[str, Any]) -> str:
+            # History entries carry the author as a {pk, username, name} dict;
+            # no id→name lookup is needed.
+            user = entry.get("user")
+            if isinstance(user, dict):
+                return user.get("name") or user.get("username") or "unknown"
+            return "unknown"
+
+        comments = [
+            {
+                "author": _author(entry),
+                "timestamp": entry.get("created_at"),
+                "text": entry.get("comment") or "",
+            }
+            for entry in entries
+            if entry.get("comment")
+        ]
+        # The history endpoint returns newest-first; present oldest→newest.
+        comments.sort(key=lambda c: c["timestamp"] or "")
+        return {
+            "project": {"id": proj["id"], "name": proj["name"], "slug": proj["slug"]},
+            "story": {
+                "id": story["id"],
+                "ref": story.get("ref", ref),
+                "subject": story.get("subject"),
+            },
+            "count": len(comments),
+            "comments": comments,
+        }
+
+    return _execute_taiga_operation(
+        "list_story_comments", do_comments, f"story #{ref} in {project}"
+    )
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
